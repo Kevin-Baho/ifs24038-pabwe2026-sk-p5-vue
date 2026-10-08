@@ -39,7 +39,7 @@
         <!-- Action Buttons -->
         <div v-if="!aucation.is_closed" class="border-t pt-4 flex flex-wrap gap-3">
           <button @click="isBidModalOpen = true"
-            class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition font-medium">
+            class="bg-green-700 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition font-medium">
             💰 Berikan Penawaran
           </button>
           <template v-if="isMyAucation">

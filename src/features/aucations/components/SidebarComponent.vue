@@ -1,6 +1,6 @@
 <template>
   <aside class="w-64 bg-white border-r border-gray-100 hidden md:flex flex-col p-4 gap-1">
-    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest px-3 mb-2">Menu</p>
+    <p class="text-xs font-bold text-gray-600 uppercase tracking-widest px-3 mb-2">Menu</p>
     <router-link
       to="/"
       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200"

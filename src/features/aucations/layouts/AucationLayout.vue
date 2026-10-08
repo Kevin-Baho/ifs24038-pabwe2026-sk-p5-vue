@@ -3,7 +3,7 @@
     <NavbarComponent />
     <div class="flex flex-1 overflow-hidden">
       <SidebarComponent />
-      <main role="main" aria-label="Konten Utama" class="flex-1 overflow-y-auto p-4">
+      <main role="main" aria-label="Konten Utama" tabindex="0" class="flex-1 overflow-y-auto p-4">
         <router-view />
       </main>
     </div>
