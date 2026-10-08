@@ -7,12 +7,13 @@
         <p class="text-gray-500 text-sm mt-1">Masuk ke akun Anda untuk melanjutkan</p>
       </div>
 
-      <!-- Input Email -->
+      <!-- Input Email (Wajib ada id="login-email-input") -->
       <div>
         <label class="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
         <div class="relative">
           <Mail class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
+            id="login-email-input"
             :value="email"
             @input="handleEmailChange"
             type="email"
@@ -23,12 +24,13 @@
         </div>
       </div>
 
-      <!-- Input Password -->
+      <!-- Input Password (Wajib ada id="login-password-input") -->
       <div>
         <label class="block text-sm font-semibold text-gray-700 mb-1.5">Password</label>
         <div class="relative">
           <Lock class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
+            id="login-password-input"
             :value="password"
             @input="handlePasswordChange"
             type="password"
@@ -39,8 +41,9 @@
         </div>
       </div>
 
-      <!-- Tombol Submit -->
+      <!-- Tombol Submit (Wajib ada id="login-submit-button") -->
       <button
+        id="login-submit-button"
         type="submit"
         :disabled="authStore.loading"
         class="w-full inline-flex justify-center items-center gap-2 py-3 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
@@ -71,7 +74,6 @@ import { showSuccessDialog, showErrorDialog } from '@/helpers/toolsHelper';
 const authStore = useAuthStore();
 const router = useRouter();
 
-// Menggunakan custom hook useInput untuk handling value & input event secara terstruktur
 const [email, handleEmailChange] = useInput('');
 const [password, handlePasswordChange] = useInput('');
 
