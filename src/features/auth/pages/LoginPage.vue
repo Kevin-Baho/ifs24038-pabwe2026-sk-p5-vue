@@ -1,3 +1,4 @@
+<!-- File: src/features/auth/pages/LoginPage.vue -->
 <template>
   <form @submit.prevent="onLogin" class="space-y-5" aria-label="Formulir Login">
     <div class="text-center mb-2">
@@ -6,11 +7,11 @@
     </div>
 
     <div>
-      <label for="login-email" class="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
+      <label for="login-email-input" class="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
       <div class="relative">
         <Mail class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" aria-hidden="true" />
         <input
-          id="login-email"
+          id="login-email-input"
           v-model="email"
           @change="handleEmailChange"
           type="email"
@@ -23,11 +24,11 @@
     </div>
 
     <div>
-      <label for="login-password" class="block text-sm font-semibold text-gray-700 mb-1.5">Password</label>
+      <label for="login-password-input" class="block text-sm font-semibold text-gray-700 mb-1.5">Password</label>
       <div class="relative">
         <Lock class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" aria-hidden="true" />
         <input
-          id="login-password"
+          id="login-password-input"
           v-model="password"
           @change="handlePasswordChange"
           type="password"
@@ -40,6 +41,7 @@
     </div>
 
     <button
+      id="login-submit-button"
       type="submit"
       :disabled="authStore.loading"
       class="w-full inline-flex justify-center items-center gap-2 py-3 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
