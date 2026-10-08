@@ -1,30 +1,72 @@
+// File: src/router.js
 import { createRouter, createWebHistory } from 'vue-router';
 import { getAccessToken } from '@/helpers/apiHelper';
 
+// Lazy-loaded components untuk performa yang lebih baik
+const AuthLayout = () => import('@/features/auth/layouts/AuthLayout.vue');
+const LoginPage = () => import('@/features/auth/pages/LoginPage.vue');
+const RegisterPage = () => import('@/features/auth/pages/RegisterPage.vue');
+
+const AucationLayout = () => import('@/features/aucations/layouts/AucationLayout.vue');
+const HomePage = () => import('@/features/aucations/pages/HomePage.vue');
+const DetailPage = () => import('@/features/aucations/pages/DetailPage.vue');
+const UsersPage = () => import('@/features/users/pages/UsersPage.vue');
+const ProfilePage = () => import('@/features/users/pages/ProfilePage.vue');
+
+const NotFoundPage = () => import('@/features/common/pages/NotFoundPage.vue');
+
 const routes = [
+  // Rute Publik (Auth)
   {
     path: '/auth',
-    component: () => import('@/features/auth/layouts/AuthLayout.vue'),
+    component: AuthLayout,
     children: [
-      { path: 'login', component: () => import('@/features/auth/pages/LoginPage.vue') },
-      { path: 'register', component: () => import('@/features/auth/pages/RegisterPage.vue') },
-    ]
+      { 
+        path: 'login', 
+        name: 'Login', 
+        component: LoginPage 
+      },
+      { 
+        path: 'register', 
+        name: 'Register', 
+        component: RegisterPage 
+      },
+    ],
   },
+  // Rute Terproteksi (Dashboard Lelang)
   {
     path: '/',
-    component: () => import('@/features/aucations/layouts/AucationLayout.vue'),
+    component: AucationLayout,
     meta: { requiresAuth: true },
     children: [
-      { path: '', component: () => import('@/features/aucations/pages/HomePage.vue') },
-      { path: 'aucations/:aucationId', component: () => import('@/features/aucations/pages/DetailPage.vue') },
-      { path: 'users', component: () => import('@/features/users/pages/UsersPage.vue') },
-      { path: 'profile', component: () => import('@/features/users/pages/ProfilePage.vue') },
-    ]
+      { 
+        path: '', 
+        name: 'Home', 
+        component: HomePage 
+      },
+      { 
+        path: 'aucations/:aucationId', 
+        name: 'DetailAucation', 
+        component: DetailPage 
+      },
+      { 
+        path: 'users', 
+        name: 'Users', 
+        component: UsersPage 
+      },
+      { 
+        path: 'profile', 
+        name: 'Profile', 
+        component: ProfilePage 
+      },
+    ],
   },
+  // Halaman 404 Not Found (Wildcard)
   {
     path: '/:pathMatch(.*)*',
-    component: () => import('@/features/common/pages/NotFoundPage.vue')
-  }
+    name: 'NotFound',
+    component: NotFoundPage,
+  },
 ];
 
 const router = createRouter({
@@ -32,16 +74,23 @@ const router = createRouter({
   routes,
 });
 
+// Navigation Guard untuk Proteksi Halaman
 router.beforeEach((to, from, next) => {
   const token = getAccessToken();
+  const isAuthRoute = to.path.startsWith('/auth');
+
+  // Jika halaman butuh login tapi user belum punya token -> lempar ke login
   if (to.meta.requiresAuth && !token) {
-    next('/auth/login');
-  } else if (to.path.startsWith('/auth') && token) {
-    next('/');
-  } else {
-    next();
+    return next({ name: 'Login' });
   }
+
+  // Jika user sudah login tapi mencoba buka halaman login/register -> lempar ke dashboard (Home)
+  if (isAuthRoute && token) {
+    return next({ name: 'Home' });
+  }
+
+  // Lanjutkan navigasi normal
+  return next();
 });
 
 export default router;
-
