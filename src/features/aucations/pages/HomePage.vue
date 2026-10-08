@@ -85,12 +85,12 @@
             :alt="item.title ? `Cover lelang: ${item.title}` : 'Cover Barang Lelang'"
             class="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-500"
           />
-          <!-- Status Badge -->
+          <!-- Status Badge (Diubah ke bg-emerald-800 untuk memenuhi kontras WCAG) -->
           <div class="absolute top-3 right-3">
             <span
               :class="item.is_closed
-                ? 'bg-red-600 text-white'
-                : 'bg-emerald-600 text-white'"
+                ? 'bg-red-700 text-white'
+                : 'bg-emerald-800 text-white'"
               class="px-3 py-1 text-xs font-bold rounded-full shadow"
             >
               {{ item.is_closed ? '🔒 Selesai' : '🟢 Aktif' }}
