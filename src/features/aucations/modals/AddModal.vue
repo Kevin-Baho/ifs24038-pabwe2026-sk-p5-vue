@@ -11,9 +11,9 @@
       ></div>
 
       <!-- Modal Box -->
-      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto z-10 border border-gray-100">
         <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50">
           <div class="flex items-center gap-2">
             <span class="bg-indigo-100 p-2 rounded-lg">
               <PlusCircle class="w-5 h-5 text-indigo-600" />
@@ -50,7 +50,7 @@
                 v-model="startBid"
                 type="number"
                 required
-                min="0"
+                min="1"
                 placeholder="0"
                 class="w-full px-4 py-2.5 bg-slate-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all duration-200"
               />
@@ -72,6 +72,7 @@
             <textarea
               v-model="description"
               rows="5"
+              required
               placeholder="Jelaskan kondisi, spesifikasi, dan detail barang lelang..."
               class="w-full px-4 py-2.5 bg-slate-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all duration-200 resize-none"
             ></textarea>
@@ -124,33 +125,38 @@ const resetForm = () => {
   description.value = '';
 };
 
-const parseErrorMessage = (error) => {
-  try {
-    const data = JSON.parse(error.message);
-    if (data.errors) {
-      return Object.values(data.errors).flat().join('\n');
-    }
-  } catch (_) {}
-  return error.message;
+// Fungsi konversi format datetime-local ke format standar SQL: YYYY-MM-DD HH:mm:ss
+const formatToStandardDateTime = (dateTimeString) => {
+  if (!dateTimeString) return '';
+  const d = new Date(dateTimeString);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 };
 
 const onSubmit = async () => {
+  if (!title.value || !startBid.value || !closedAt.value || !description.value) {
+    showErrorDialog('Semua field wajib diisi!');
+    return;
+  }
+
   loading.value = true;
   try {
-    // Convert datetime-local value to ISO string
-    const closedAtISO = closedAt.value ? new Date(closedAt.value).toISOString() : '';
+    const formattedDate = formatToStandardDateTime(closedAt.value);
+
     await createAucation({
-      title: title.value,
-      description: description.value,
-      start_bid: Number(startBid.value),
-      closed_at: closedAtISO,
+      title: title.value.trim(),
+      description: description.value.trim(),
+      start_bid: parseInt(startBid.value, 10), // Konversi ke Integer murni
+      closed_at: formattedDate, // Format YYYY-MM-DD HH:mm:ss
     });
+
     await showSuccessDialog('Lelang berhasil dibuat!');
     emit('refresh');
     emit('close');
     resetForm();
   } catch (error) {
-    showErrorDialog(parseErrorMessage(error));
+    // Menampilkan pesan asli lengkap yang dikembalikan oleh backend
+    showErrorDialog(error.message);
   } finally {
     loading.value = false;
   }

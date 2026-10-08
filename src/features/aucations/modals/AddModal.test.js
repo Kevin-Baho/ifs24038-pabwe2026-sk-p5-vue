@@ -5,89 +5,111 @@ import AddModal from './AddModal.vue';
 import * as aucationApi from '../api/aucationApi';
 import * as toolsHelper from '@/helpers/toolsHelper';
 
-vi.mock('../api/aucationApi', () => ({ createAucation: vi.fn() }));
+vi.mock('../api/aucationApi', () => ({ 
+  createAucation: vi.fn() 
+}));
+
 vi.mock('@/helpers/toolsHelper', () => ({
   showSuccessDialog: vi.fn().mockResolvedValue(true),
   showErrorDialog: vi.fn(),
 }));
 
 describe('AddModal', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   it('does not render when isOpen is false', () => {
     const { queryByText } = renderWithProviders(AddModal, { props: { isOpen: false } });
     expect(queryByText('Tambah Lelang Baru')).not.toBeInTheDocument();
   });
 
-  it('renders when isOpen is true', () => {
+  it('renders correctly when isOpen is true', () => {
     const { getByText } = renderWithProviders(AddModal, { props: { isOpen: true } });
     expect(getByText('Tambah Lelang Baru')).toBeInTheDocument();
     expect(getByText('Batas Waktu Lelang')).toBeInTheDocument();
   });
 
-  it('emits close when Batal clicked', async () => {
+  it('emits close when Batal button is clicked', async () => {
     const { getByText, emitted } = renderWithProviders(AddModal, { props: { isOpen: true } });
     await fireEvent.click(getByText('Batal'));
     expect(emitted().close).toBeTruthy();
   });
 
-  it('emits close when backdrop clicked', async () => {
+  it('emits close when backdrop is clicked', async () => {
     const { container, emitted } = renderWithProviders(AddModal, { props: { isOpen: true } });
-    const backdrop = container.querySelector('.absolute.inset-0');
+    const backdrop = container.querySelector('.bg-black\\/60');
     await fireEvent.click(backdrop);
     expect(emitted().close).toBeTruthy();
   });
 
-  it('submits with correct payload including start_bid as Number and closed_at', async () => {
-    aucationApi.createAucation.mockResolvedValue({});
-    const { container, getByPlaceholderText, getByRole, emitted } = renderWithProviders(AddModal, { props: { isOpen: true } });
+  it('shows error dialog when fields are empty on submit', async () => {
+    const { getByRole } = renderWithProviders(AddModal, { props: { isOpen: true } });
+    
+    // Submit tanpa mengisi form
+    await fireEvent.submit(getByRole('button', { name: /Simpan Lelang/i }));
 
-    await fireEvent.update(getByPlaceholderText('Masukkan judul lelang...'), 'Laptop Gaming');
-    // Use container.querySelector to target number input by type
+    expect(toolsHelper.showErrorDialog).toHaveBeenCalledWith('Semua field wajib diisi!');
+    expect(aucationApi.createAucation).not.toHaveBeenCalled();
+  });
+
+  it('submits with correct payload and formats datetime to standard SQL format', async () => {
+    aucationApi.createAucation.mockResolvedValue({});
+    const { container, getByPlaceholderText, getByRole, emitted } = renderWithProviders(AddModal, { 
+      props: { isOpen: true } 
+    });
+
+    await fireEvent.update(getByPlaceholderText('Masukkan judul lelang...'), 'Laptop Gaming Asus');
+    
     const numberInput = container.querySelector('input[type="number"]');
     await fireEvent.update(numberInput, '5000000');
-    await fireEvent.update(getByPlaceholderText('Jelaskan kondisi, spesifikasi, dan detail barang lelang...'), 'Kondisi 99%');
+
     const dtInput = container.querySelector('input[type="datetime-local"]');
-    if (dtInput) await fireEvent.update(dtInput, '2025-12-31T23:59');
+    await fireEvent.update(dtInput, '2026-12-31T23:59');
+
+    await fireEvent.update(
+      getByPlaceholderText('Jelaskan kondisi, spesifikasi, dan detail barang lelang...'), 
+      'Kondisi mulus 99%'
+    );
 
     await fireEvent.submit(getByRole('button', { name: /Simpan Lelang/i }));
 
     await waitFor(() => {
       expect(aucationApi.createAucation).toHaveBeenCalledWith(
         expect.objectContaining({
-          title: 'Laptop Gaming',
-          description: 'Kondisi 99%',
+          title: 'Laptop Gaming Asus',
           start_bid: 5000000,
+          closed_at: expect.stringMatching(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/),
+          description: 'Kondisi mulus 99%',
         })
       );
-      expect(toolsHelper.showSuccessDialog).toHaveBeenCalled();
+      expect(toolsHelper.showSuccessDialog).toHaveBeenCalledWith('Lelang berhasil dibuat!');
       expect(emitted().refresh).toBeTruthy();
       expect(emitted().close).toBeTruthy();
     });
   });
 
-  it('shows error dialog when submission fails with plain message', async () => {
-    aucationApi.createAucation.mockRejectedValue(new Error('Gagal membuat lelang'));
-    const { getByPlaceholderText, getByRole } = renderWithProviders(AddModal, { props: { isOpen: true } });
-
-    await fireEvent.update(getByPlaceholderText('Masukkan judul lelang...'), 'Test');
-    await fireEvent.submit(getByRole('button', { name: /Simpan Lelang/i }));
-
-    await waitFor(() => {
-      expect(toolsHelper.showErrorDialog).toHaveBeenCalledWith('Gagal membuat lelang');
+  it('shows error dialog when submission fails from API', async () => {
+    aucationApi.createAucation.mockRejectedValue(new Error('Gagal membuat lelang: closed_at tidak valid'));
+    const { container, getByPlaceholderText, getByRole } = renderWithProviders(AddModal, { 
+      props: { isOpen: true } 
     });
-  });
 
-  it('parses JSON error with errors field for specific messages', async () => {
-    const jsonErr = JSON.stringify({ errors: { title: ['Judul wajib diisi'] } });
-    aucationApi.createAucation.mockRejectedValue(new Error(jsonErr));
-    const { getByPlaceholderText, getByRole } = renderWithProviders(AddModal, { props: { isOpen: true } });
+    // Isi form agar lolos validasi awal
+    await fireEvent.update(getByPlaceholderText('Masukkan judul lelang...'), 'Test Title');
+    const numberInput = container.querySelector('input[type="number"]');
+    await fireEvent.update(numberInput, '10000');
+    const dtInput = container.querySelector('input[type="datetime-local"]');
+    await fireEvent.update(dtInput, '2026-12-31T23:59');
+    await fireEvent.update(
+      getByPlaceholderText('Jelaskan kondisi, spesifikasi, dan detail barang lelang...'), 
+      'Deskripsi'
+    );
 
-    await fireEvent.update(getByPlaceholderText('Masukkan judul lelang...'), 'Test');
     await fireEvent.submit(getByRole('button', { name: /Simpan Lelang/i }));
 
     await waitFor(() => {
-      expect(toolsHelper.showErrorDialog).toHaveBeenCalledWith('Judul wajib diisi');
+      expect(toolsHelper.showErrorDialog).toHaveBeenCalledWith('Gagal membuat lelang: closed_at tidak valid');
     });
   });
 });
