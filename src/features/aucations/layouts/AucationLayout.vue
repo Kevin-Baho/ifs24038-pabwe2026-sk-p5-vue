@@ -3,7 +3,7 @@
     <NavbarComponent />
     <div class="flex flex-1 overflow-hidden">
       <SidebarComponent />
-      <main class="flex-1 overflow-y-auto p-4">
+      <main role="main" aria-label="Konten Utama" class="flex-1 overflow-y-auto p-4">
         <router-view />
       </main>
     </div>
@@ -14,4 +14,3 @@
 import NavbarComponent from '../components/NavbarComponent.vue';
 import SidebarComponent from '../components/SidebarComponent.vue';
 </script>
-

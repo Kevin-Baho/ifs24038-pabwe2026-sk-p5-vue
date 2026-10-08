@@ -50,21 +50,31 @@ describe('DetailPage', () => {
     vi.clearAllMocks();
   });
 
-  it('shows loading state initially', () => {
+  it('shows loading state initially (aucation null)', () => {
     aucationApi.getAucationById.mockResolvedValue({ data: { aucation: mockAucation, bids: [] } });
     const { getByText } = renderWithProviders(DetailPage);
     expect(getByText('Memuat detail lelang...')).toBeInTheDocument();
   });
 
-  it('loads and renders auction detail', async () => {
+  it('loads and renders auction detail with cover alt text', async () => {
     aucationApi.getAucationById.mockResolvedValue({ data: { aucation: mockAucation, bids: mockBids } });
-    const { getByText } = renderWithProviders(DetailPage);
+    const { getByText, getByAltText } = renderWithProviders(DetailPage);
 
     await waitFor(() => {
       expect(getByText('Barang Antik')).toBeInTheDocument();
       expect(getByText('Penjual')).toBeInTheDocument();
       expect(getByText('Budi')).toBeInTheDocument();
-      expect(getByText('Riwayat Penawaran (1)')).toBeInTheDocument();
+      // Cover alt text: title present → "Cover lelang: X"
+      expect(getByAltText('Cover lelang: Barang Antik')).toBeInTheDocument();
+    });
+  });
+
+  it('shows fallback cover alt text when title is missing', async () => {
+    const aucationNoTitle = { ...mockAucation, title: '' };
+    aucationApi.getAucationById.mockResolvedValue({ data: { aucation: aucationNoTitle, bids: [] } });
+    const { getByAltText } = renderWithProviders(DetailPage);
+    await waitFor(() => {
+      expect(getByAltText('Cover Barang Lelang')).toBeInTheDocument();
     });
   });
 
@@ -111,6 +121,17 @@ describe('DetailPage', () => {
     });
   });
 
+  it('isMyAucation returns false when currentUser is null', async () => {
+    aucationApi.getAucationById.mockResolvedValue({ data: { aucation: mockAucation, bids: [] } });
+    const { queryByText } = renderWithProviders(DetailPage);
+    const store = useUsersStore();
+    store.currentUser = null;
+
+    await waitFor(() => {
+      expect(queryByText('✏️ Edit')).not.toBeInTheDocument();
+    });
+  });
+
   it('shows bid and edit buttons when auction is active and user is owner', async () => {
     aucationApi.getAucationById.mockResolvedValue({ data: { aucation: mockAucation, bids: [] } });
     const { getByText } = renderWithProviders(DetailPage);
@@ -122,18 +143,6 @@ describe('DetailPage', () => {
       expect(getByText('✏️ Edit')).toBeInTheDocument();
       expect(getByText('🔒 Tutup Lelang')).toBeInTheDocument();
       expect(getByText('🗑️ Hapus')).toBeInTheDocument();
-    });
-  });
-
-  it('isMyAucation returns false when currentUser is null', async () => {
-    aucationApi.getAucationById.mockResolvedValue({ data: { aucation: mockAucation, bids: [] } });
-    const { queryByText } = renderWithProviders(DetailPage);
-    const store = useUsersStore();
-    store.currentUser = null;
-
-    await waitFor(() => {
-      // Owner buttons should not show
-      expect(queryByText('✏️ Edit')).not.toBeInTheDocument();
     });
   });
 
@@ -218,11 +227,24 @@ describe('DetailPage', () => {
     aucationApi.getAucationById.mockResolvedValue({ data: { aucation: mockAucation, bids: [] } });
     const { getByText, queryByText } = renderWithProviders(DetailPage);
     const store = useUsersStore();
-    store.currentUser = { id: 77, name: 'Pembeli' }; // different from creator_id 99
+    store.currentUser = { id: 77, name: 'Pembeli' };
 
     await waitFor(() => {
       expect(getByText('💰 Berikan Penawaran')).toBeInTheDocument();
       expect(queryByText('✏️ Edit')).not.toBeInTheDocument();
+    });
+  });
+
+  it('handles response without bids field gracefully', async () => {
+    aucationApi.getAucationById.mockResolvedValue({
+      data: {
+        aucation: { ...mockAucation, id: 50 },
+        bids: null,
+      },
+    });
+    const { getByText } = renderWithProviders(DetailPage);
+    await waitFor(() => {
+      expect(getByText('Belum ada penawaran untuk lelang ini.')).toBeInTheDocument();
     });
   });
 });

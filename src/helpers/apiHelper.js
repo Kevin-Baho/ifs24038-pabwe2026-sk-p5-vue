@@ -20,9 +20,7 @@ export const removeAccessToken = () => {
 
 // Fungsi utama API Fetch yang mendukung token dan error handling detail
 export const apiFetch = async (url, options = {}) => {
-  const baseUrl =
-    import.meta.env?.VITE_DELCOM_BASEURL ||
-    (typeof DELCOM_BASEURL !== 'undefined' ? DELCOM_BASEURL : 'https://open-api.delcom.org/api/v1');
+  const baseUrl = import.meta.env?.VITE_DELCOM_BASEURL || 'https://open-api.delcom.org/api/v1';
 
   const token = getAccessToken();
 

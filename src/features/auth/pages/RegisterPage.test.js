@@ -12,23 +12,26 @@ vi.mock('@/helpers/toolsHelper', () => ({
 }));
 
 describe('RegisterPage', () => {
-  it('renders register form', () => {
-    const { getByText } = renderWithProviders(RegisterPage);
+  it('renders register form with labels', () => {
+    const { getByText, getByLabelText } = renderWithProviders(RegisterPage);
     expect(getByText('Buat Akun Baru')).toBeInTheDocument();
+    expect(getByLabelText('Nama Lengkap')).toBeInTheDocument();
+    expect(getByLabelText('Email')).toBeInTheDocument();
+    expect(getByLabelText('Password')).toBeInTheDocument();
   });
 
   it('should successfully register and call showSuccessDialog', async () => {
-    const { getByPlaceholderText, getByRole } = renderWithProviders(RegisterPage);
+    const { getByLabelText, getByRole } = renderWithProviders(RegisterPage);
     const store = useAuthStore();
     store.registerUser = vi.fn().mockResolvedValue(true);
 
-    await fireEvent.update(getByPlaceholderText('John Doe'), 'Udin');
-    await fireEvent.update(getByPlaceholderText('nama@email.com'), 'udin@mail.com');
-    await fireEvent.update(getByPlaceholderText('••••••••'), 'password123');
-    // Fire change events to cover handleNameChange, handleEmailChange, handlePasswordChange
-    await fireEvent.change(getByPlaceholderText('John Doe'));
-    await fireEvent.change(getByPlaceholderText('nama@email.com'));
-    await fireEvent.change(getByPlaceholderText('••••••••'));
+    await fireEvent.update(getByLabelText('Nama Lengkap'), 'Udin');
+    await fireEvent.update(getByLabelText('Email'), 'udin@mail.com');
+    await fireEvent.update(getByLabelText('Password'), 'password123');
+    // fire change events to cover handle*Change functions
+    await fireEvent.change(getByLabelText('Nama Lengkap'));
+    await fireEvent.change(getByLabelText('Email'));
+    await fireEvent.change(getByLabelText('Password'));
     await fireEvent.submit(getByRole('button', { name: /Buat Akun/i }));
 
     await waitFor(() => {
@@ -38,13 +41,13 @@ describe('RegisterPage', () => {
   });
 
   it('should show error dialog on register failure', async () => {
-    const { getByPlaceholderText, getByRole } = renderWithProviders(RegisterPage);
+    const { getByLabelText, getByRole } = renderWithProviders(RegisterPage);
     const store = useAuthStore();
     store.registerUser = vi.fn().mockRejectedValue(new Error('Email sudah digunakan'));
 
-    await fireEvent.update(getByPlaceholderText('John Doe'), 'Udin');
-    await fireEvent.update(getByPlaceholderText('nama@email.com'), 'x@b.com');
-    await fireEvent.update(getByPlaceholderText('••••••••'), 'wrong');
+    await fireEvent.update(getByLabelText('Nama Lengkap'), 'Udin');
+    await fireEvent.update(getByLabelText('Email'), 'x@b.com');
+    await fireEvent.update(getByLabelText('Password'), 'wrong');
     await fireEvent.submit(getByRole('button', { name: /Buat Akun/i }));
 
     await waitFor(() => {

@@ -1,24 +1,26 @@
 <template>
   <Transition name="modal">
-    <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      role="dialog" aria-modal="true" aria-labelledby="change-modal-title">
       <!-- Backdrop -->
-      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="emit('close')"></div>
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="emit('close')" aria-hidden="true"></div>
 
       <!-- Modal Box -->
       <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <!-- Header -->
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div class="flex items-center gap-2">
-            <span class="bg-amber-100 p-2 rounded-lg">
-              <Pencil class="w-5 h-5 text-amber-600" />
+            <span class="bg-amber-100 p-2 rounded-lg" aria-hidden="true">
+              <Pencil class="w-5 h-5 text-amber-600" aria-hidden="true" />
             </span>
-            <h2 class="text-xl font-bold text-gray-800">Edit Lelang</h2>
+            <h2 id="change-modal-title" class="text-xl font-bold text-gray-800">Edit Lelang</h2>
           </div>
           <button
             @click="emit('close')"
-            class="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            class="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+            aria-label="Tutup modal edit lelang"
           >
-            <X class="w-5 h-5" />
+            <X class="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 
@@ -26,47 +28,51 @@
         <form @submit.prevent="onSubmit" class="p-6 space-y-5">
           <!-- Judul -->
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Judul Lelang</label>
+            <label for="change-title" class="block text-sm font-semibold text-gray-700 mb-1.5">Judul Lelang</label>
             <input
+              id="change-title"
               v-model="localTitle"
               type="text"
               required
               placeholder="Masukkan judul lelang..."
-              class="w-full px-4 py-2.5 bg-slate-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all duration-200"
+              class="w-full px-4 py-2.5 bg-slate-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all duration-200"
             />
           </div>
 
           <!-- Harga & Waktu -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Harga Awal (Rp)</label>
+              <label for="change-start-bid" class="block text-sm font-semibold text-gray-700 mb-1.5">Harga Awal (Rp)</label>
               <input
+                id="change-start-bid"
                 v-model="localStartBid"
                 type="number"
                 required
                 min="0"
-                class="w-full px-4 py-2.5 bg-slate-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all duration-200"
+                class="w-full px-4 py-2.5 bg-slate-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all duration-200"
               />
             </div>
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Batas Waktu Lelang</label>
+              <label for="change-closed-at" class="block text-sm font-semibold text-gray-700 mb-1.5">Batas Waktu Lelang</label>
               <input
+                id="change-closed-at"
                 v-model="localClosedAt"
                 type="datetime-local"
                 required
-                class="w-full px-4 py-2.5 bg-slate-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all duration-200"
+                class="w-full px-4 py-2.5 bg-slate-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all duration-200"
               />
             </div>
           </div>
 
           <!-- Deskripsi -->
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Deskripsi Barang</label>
+            <label for="change-description" class="block text-sm font-semibold text-gray-700 mb-1.5">Deskripsi Barang</label>
             <textarea
+              id="change-description"
               v-model="localDescription"
               rows="5"
               placeholder="Jelaskan kondisi, spesifikasi, dan detail barang lelang..."
-              class="w-full px-4 py-2.5 bg-slate-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all duration-200 resize-none"
+              class="w-full px-4 py-2.5 bg-slate-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all duration-200 resize-none"
             ></textarea>
           </div>
 
@@ -75,7 +81,7 @@
             <button
               type="button"
               @click="emit('close')"
-              class="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all duration-200"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all duration-200"
             >
               Batal
             </button>
@@ -84,8 +90,8 @@
               :disabled="loading"
               class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              <Loader2 v-if="loading" class="w-4 h-4 animate-spin" />
-              <Save v-else class="w-4 h-4" />
+              <Loader2 v-if="loading" class="w-4 h-4 animate-spin" aria-hidden="true" />
+              <Save v-else class="w-4 h-4" aria-hidden="true" />
               {{ loading ? 'Menyimpan...' : 'Update Lelang' }}
             </button>
           </div>

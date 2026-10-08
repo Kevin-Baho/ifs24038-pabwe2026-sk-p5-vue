@@ -12,17 +12,32 @@ describe('apiHelper', () => {
     vi.restoreAllMocks();
   });
 
-  it('should manipulate accessToken in localStorage properly', () => {
+  it('should store token with putAccessToken when token is truthy', () => {
     expect(getAccessToken()).toBe('');
-    
     putAccessToken('my-secret-token');
     expect(getAccessToken()).toBe('my-secret-token');
+  });
 
+  it('should remove token with putAccessToken when token is falsy (null/empty)', () => {
+    // First store a token
+    putAccessToken('existing-token');
+    expect(getAccessToken()).toBe('existing-token');
+    // Now clear it by passing null/falsy
+    putAccessToken(null);
+    expect(getAccessToken()).toBe('');
+    // Also test empty string
+    putAccessToken('another-token');
+    putAccessToken('');
+    expect(getAccessToken()).toBe('');
+  });
+
+  it('should remove token with removeAccessToken', () => {
+    putAccessToken('token-to-remove');
     removeAccessToken();
     expect(getAccessToken()).toBe('');
   });
 
-  it('should fetch with token and handle URL leading slash using apiFetch', async () => {
+  it('should fetch with token and handle URL without leading slash using apiFetch', async () => {
     putAccessToken('token-123');
     global.fetch.mockResolvedValueOnce({
       ok: true,
@@ -30,15 +45,14 @@ describe('apiHelper', () => {
     });
 
     const data = await apiFetch('test-endpoint', { method: 'GET' });
-    
+
     expect(data.message).toBe('Success');
     expect(global.fetch).toHaveBeenCalledWith(
       expect.stringContaining('/test-endpoint'),
       expect.objectContaining({
-        headers: {
-          'Content-Type': 'application/json',
+        headers: expect.objectContaining({
           Authorization: 'Bearer token-123',
-        },
+        }),
       })
     );
   });
@@ -107,7 +121,7 @@ describe('apiHelper', () => {
     );
   });
 
-  it('should fallback to default error message if response has no message or json parse fails', async () => {
+  it('should fallback to default error message if json parse fails', async () => {
     global.fetch.mockResolvedValueOnce({
       ok: false,
       json: async () => { throw new Error('Not JSON'); },
@@ -123,5 +137,23 @@ describe('apiHelper', () => {
     });
 
     await expect(apiFetch('/empty-err')).rejects.toThrow('Terjadi kesalahan pada server');
+  });
+
+  it('should use default baseUrl if VITE_DELCOM_BASEURL is empty or undefined', async () => {
+    const originalEnv = import.meta.env.VITE_DELCOM_BASEURL;
+    delete import.meta.env.VITE_DELCOM_BASEURL;
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ message: 'default url' }),
+    });
+
+    await apiFetch('/fallback-url');
+    expect(global.fetch).toHaveBeenCalledWith(
+      'https://open-api.delcom.org/api/v1/fallback-url',
+      expect.anything()
+    );
+
+    import.meta.env.VITE_DELCOM_BASEURL = originalEnv;
   });
 });

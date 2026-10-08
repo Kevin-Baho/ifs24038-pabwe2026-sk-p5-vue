@@ -10,7 +10,6 @@ vi.mock('@/helpers/toolsHelper', () => ({
   formatRupiah: vi.fn((val) => `Rp ${val}`),
 }));
 
-// Mock pinia store actions agar bisa di-spy dengan vi.fn()
 vi.mock('../states/aucationsStore', async (importOriginal) => {
   const actual = await importOriginal();
   return {
@@ -58,22 +57,50 @@ describe('HomePage', () => {
     expect(getByText('Tidak ada lelang ditemukan')).toBeInTheDocument();
   });
 
-  it('renders auctions list with status badges', async () => {
+  it('renders auctions list with active badge (is_closed=0)', async () => {
     useAucationsStore.mockReturnValueOnce({
       loading: false,
       aucations: [
         { id: 1, title: 'Laptop Gaming', start_bid: 5000000, is_closed: 0 },
+      ],
+      fetchAucations: vi.fn(),
+    });
+
+    const { getByText, getByAltText } = renderWithProviders(HomePage);
+    await nextTick();
+    expect(getByText('Laptop Gaming')).toBeInTheDocument();
+    expect(getByText('🟢 Aktif')).toBeInTheDocument();
+    // alt text coverage: title present → uses title
+    expect(getByAltText('Cover lelang: Laptop Gaming')).toBeInTheDocument();
+  });
+
+  it('renders auctions list with closed badge (is_closed=1)', async () => {
+    useAucationsStore.mockReturnValueOnce({
+      loading: false,
+      aucations: [
         { id: 2, title: 'HP Bekas', start_bid: 1000000, is_closed: 1 },
       ],
       fetchAucations: vi.fn(),
     });
 
-    const { getByText, getAllByText } = renderWithProviders(HomePage);
+    const { getByText } = renderWithProviders(HomePage);
     await nextTick();
-    expect(getByText('Laptop Gaming')).toBeInTheDocument();
     expect(getByText('HP Bekas')).toBeInTheDocument();
-    expect(getByText('🟢 Aktif')).toBeInTheDocument();
-    expect(getAllByText(/Selesai|Ditutup/).length).toBeGreaterThanOrEqual(1);
+    expect(getByText('🔒 Selesai')).toBeInTheDocument();
+  });
+
+  it('renders auction without title uses fallback alt text', async () => {
+    useAucationsStore.mockReturnValueOnce({
+      loading: false,
+      aucations: [
+        { id: 4, title: '', start_bid: 500000, is_closed: 0 },
+      ],
+      fetchAucations: vi.fn(),
+    });
+
+    const { getByAltText } = renderWithProviders(HomePage);
+    await nextTick();
+    expect(getByAltText('Cover Barang Lelang')).toBeInTheDocument();
   });
 
   it('filters auctions by search query', async () => {
@@ -138,5 +165,18 @@ describe('HomePage', () => {
     const { getByText } = renderWithProviders(HomePage);
     await nextTick();
     expect(getByText('Motor Tua')).toBeInTheDocument();
+  });
+
+  it('renders 0 as fallback when both start_bid and start_price are undefined', async () => {
+    useAucationsStore.mockReturnValueOnce({
+      loading: false,
+      aucations: [{ id: 4, title: 'Barang Gratis', is_closed: 0 }],
+      fetchAucations: vi.fn(),
+    });
+
+    const { getByText } = renderWithProviders(HomePage);
+    await nextTick();
+    expect(getByText('Barang Gratis')).toBeInTheDocument();
+    expect(getByText('Rp 0')).toBeInTheDocument();
   });
 });

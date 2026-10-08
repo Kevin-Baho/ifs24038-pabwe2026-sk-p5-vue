@@ -33,3 +33,4 @@ export function renderWithProviders(ui, options = {}) {
     pinia,
   };
 }
+

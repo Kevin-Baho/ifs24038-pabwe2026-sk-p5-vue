@@ -12,21 +12,23 @@ vi.mock('@/helpers/toolsHelper', () => ({
 }));
 
 describe('LoginPage', () => {
-  it('renders login form', () => {
-    const { getByText } = renderWithProviders(LoginPage);
+  it('renders login form with labels and inputs', () => {
+    const { getByText, getByLabelText } = renderWithProviders(LoginPage);
     expect(getByText('Selamat Datang!')).toBeInTheDocument();
+    expect(getByLabelText('Email')).toBeInTheDocument();
+    expect(getByLabelText('Password')).toBeInTheDocument();
   });
 
   it('should successfully login and call showSuccessDialog', async () => {
-    const { getByPlaceholderText, getByRole } = renderWithProviders(LoginPage);
+    const { getByLabelText, getByRole } = renderWithProviders(LoginPage);
     const store = useAuthStore();
     store.loginUser = vi.fn().mockResolvedValue(true);
 
-    await fireEvent.update(getByPlaceholderText('nama@email.com'), 'a@b.com');
-    await fireEvent.update(getByPlaceholderText('••••••••'), 'password123');
-    // Also fire change events to cover handleEmailChange and handlePasswordChange
-    await fireEvent.change(getByPlaceholderText('nama@email.com'));
-    await fireEvent.change(getByPlaceholderText('••••••••'));
+    await fireEvent.update(getByLabelText('Email'), 'a@b.com');
+    await fireEvent.update(getByLabelText('Password'), 'password123');
+    // fire change to cover handleEmailChange and handlePasswordChange
+    await fireEvent.change(getByLabelText('Email'));
+    await fireEvent.change(getByLabelText('Password'));
     await fireEvent.submit(getByRole('button', { name: /Masuk Sekarang/i }));
 
     await waitFor(() => {
@@ -36,12 +38,12 @@ describe('LoginPage', () => {
   });
 
   it('should show error dialog on login failure', async () => {
-    const { getByPlaceholderText, getByRole } = renderWithProviders(LoginPage);
+    const { getByLabelText, getByRole } = renderWithProviders(LoginPage);
     const store = useAuthStore();
     store.loginUser = vi.fn().mockRejectedValue(new Error('Login Gagal'));
 
-    await fireEvent.update(getByPlaceholderText('nama@email.com'), 'x@b.com');
-    await fireEvent.update(getByPlaceholderText('••••••••'), 'wrong');
+    await fireEvent.update(getByLabelText('Email'), 'x@b.com');
+    await fireEvent.update(getByLabelText('Password'), 'wrong');
     await fireEvent.submit(getByRole('button', { name: /Masuk Sekarang/i }));
 
     await waitFor(() => {

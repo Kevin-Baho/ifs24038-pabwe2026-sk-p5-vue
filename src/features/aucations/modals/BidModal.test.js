@@ -1,3 +1,4 @@
+// File: src/features/aucations/modals/BidModal.test.js
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, waitFor } from '@testing-library/vue';
 import { renderWithProviders } from '@/test-utils';
@@ -22,10 +23,11 @@ describe('BidModal', () => {
   });
 
   it('renders when isOpen is true', () => {
-    const { getByText } = renderWithProviders(BidModal, {
+    const { getByText, getByLabelText } = renderWithProviders(BidModal, {
       props: { isOpen: true, aucationId: 1 },
     });
     expect(getByText('Berikan Penawaran')).toBeInTheDocument();
+    expect(getByLabelText('Jumlah Bid (Rp)')).toBeInTheDocument();
   });
 
   it('emits close when Batal clicked', async () => {

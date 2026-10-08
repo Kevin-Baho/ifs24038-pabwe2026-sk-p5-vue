@@ -2,20 +2,21 @@
   <div v-if="aucation" class="max-w-4xl mx-auto space-y-6">
     <!-- Back button -->
     <button @click="$router.back()"
-      class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-medium transition">
+      class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-medium transition"
+      aria-label="Kembali ke halaman sebelumnya">
       ← Kembali
     </button>
 
     <!-- Aucation Detail Card -->
-    <div class="bg-white rounded-xl shadow border overflow-hidden">
+    <article class="bg-white rounded-xl shadow border overflow-hidden">
       <img :src="aucation.cover || 'https://placehold.co/800x300?text=No+Cover'"
-        :alt="aucation.title"
+        :alt="aucation.title ? `Cover lelang: ${aucation.title}` : 'Cover Barang Lelang'"
         class="w-full h-64 object-cover" />
       <div class="p-6 space-y-4">
         <div class="flex flex-col sm:flex-row justify-between items-start gap-3">
           <div class="flex-1">
             <h1 class="text-2xl font-bold text-gray-900">{{ aucation.title }}</h1>
-            <p class="text-gray-500 mt-1 text-sm">
+            <p class="text-gray-600 mt-1 text-sm">
               Oleh: <span class="font-semibold">{{ aucation.creator?.name || 'Anonim' }}</span>
             </p>
           </div>
@@ -27,11 +28,11 @@
 
         <div class="border-t pt-4">
           <p class="text-3xl font-bold text-indigo-600">{{ formatRupiah(aucation.start_price) }}</p>
-          <p class="text-xs text-gray-400 mt-1">Harga Awal</p>
+          <p class="text-xs text-gray-600 mt-1 font-medium">Harga Awal</p>
         </div>
 
         <div class="border-t pt-4">
-          <h3 class="font-bold text-lg mb-2">Deskripsi Barang</h3>
+          <h2 class="font-bold text-lg mb-2">Deskripsi Barang</h2>
           <div class="prose max-w-none text-gray-700 whitespace-pre-wrap">{{ aucation.description }}</div>
         </div>
 
@@ -61,24 +62,24 @@
           </template>
         </div>
       </div>
-    </div>
+    </article>
 
     <!-- Riwayat Bids -->
-    <div class="bg-white rounded-xl shadow border p-6">
+    <section class="bg-white rounded-xl shadow border p-6" aria-label="Riwayat Penawaran">
       <h2 class="text-xl font-bold mb-4 text-gray-800">Riwayat Penawaran ({{ bids.length }})</h2>
-      <div v-if="bids.length === 0" class="text-center py-8 text-gray-400">
+      <div v-if="bids.length === 0" class="text-center py-8 text-gray-600">
         <p>Belum ada penawaran untuk lelang ini.</p>
       </div>
-      <ul v-else class="divide-y">
+      <ul v-else class="divide-y" aria-label="Daftar penawaran">
         <li v-for="bid in bids" :key="bid.id" class="flex justify-between items-center py-3">
           <div>
             <p class="font-semibold text-gray-800">{{ bid.bidder?.name || 'Anonim' }}</p>
-            <p class="text-xs text-gray-500">{{ formatDate(bid.created_at) }}</p>
+            <p class="text-xs text-gray-600">{{ formatDate(bid.created_at) }}</p>
           </div>
           <span class="font-bold text-indigo-600">{{ formatRupiah(bid.bid_amount) }}</span>
         </li>
       </ul>
-    </div>
+    </section>
 
     <!-- Modals -->
     <BidModal
@@ -99,8 +100,8 @@
   </div>
 
   <!-- Loading state -->
-  <div v-else class="text-center py-20 text-gray-500">
-    <div class="text-5xl mb-3">⏳</div>
+  <div v-else class="text-center py-20 text-gray-600" role="status" aria-live="polite">
+    <div class="text-5xl mb-3" aria-hidden="true">⏳</div>
     <p>Memuat detail lelang...</p>
   </div>
 </template>
@@ -171,4 +172,3 @@ onMounted(() => {
   fetchData();
 });
 </script>
-
