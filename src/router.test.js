@@ -54,4 +54,18 @@ describe('router', () => {
     await router.isReady();
     expect(router.currentRoute.value.path).toBe('/profile');
   });
+
+  it('navigates to detail page route to trigger DetailPage lazy import', async () => {
+    apiHelper.getAccessToken.mockReturnValue('valid-token');
+    await router.push('/aucations/123');
+    await router.isReady();
+    expect(router.currentRoute.value.path).toBe('/aucations/123');
+  });
+
+  it('navigates to 404 page to trigger NotFoundPage lazy import', async () => {
+    apiHelper.getAccessToken.mockReturnValue(null);
+    await router.push('/this-page-does-not-exist');
+    await router.isReady();
+    expect(router.currentRoute.value.name).toBe('NotFound');
+  });
 });

@@ -247,4 +247,80 @@ describe('DetailPage', () => {
       expect(getByText('Belum ada penawaran untuk lelang ini.')).toBeInTheDocument();
     });
   });
+
+  it('clicks the back button to trigger $router.back()', async () => {
+    aucationApi.getAucationById.mockResolvedValue({ data: { aucation: mockAucation, bids: [] } });
+    const { getByLabelText } = renderWithProviders(DetailPage);
+    await waitFor(() => getByLabelText('Kembali ke halaman sebelumnya'));
+    await fireEvent.click(getByLabelText('Kembali ke halaman sebelumnya'));
+  });
+
+  it('opens bid modal when bid button is clicked', async () => {
+    aucationApi.getAucationById.mockResolvedValue({ data: { aucation: mockAucation, bids: [] } });
+    const { getByText } = renderWithProviders(DetailPage);
+    await waitFor(() => getByText('💰 Berikan Penawaran'));
+    await fireEvent.click(getByText('💰 Berikan Penawaran'));
+    await waitFor(() => {
+      expect(getByText('Berikan Penawaran')).toBeInTheDocument();
+    });
+  });
+
+  it('opens edit modal when edit button is clicked', async () => {
+    aucationApi.getAucationById.mockResolvedValue({ data: { aucation: mockAucation, bids: [] } });
+    const { getByText } = renderWithProviders(DetailPage);
+    const store = useUsersStore();
+    store.currentUser = { id: 99, name: 'Penjual' };
+    await waitFor(() => getByText('✏️ Edit'));
+    await fireEvent.click(getByText('✏️ Edit'));
+    await waitFor(() => {
+      expect(getByText('Edit Lelang')).toBeInTheDocument();
+    });
+  });
+
+  it('opens cover modal when cover button is clicked', async () => {
+    aucationApi.getAucationById.mockResolvedValue({ data: { aucation: mockAucation, bids: [] } });
+    const { getByText } = renderWithProviders(DetailPage);
+    const store = useUsersStore();
+    store.currentUser = { id: 99, name: 'Penjual' };
+    await waitFor(() => getByText('🖼️ Cover'));
+    await fireEvent.click(getByText('🖼️ Cover'));
+    await waitFor(() => {
+      expect(getByText('Ubah Cover Lelang')).toBeInTheDocument();
+    });
+  });
+
+  it('closes bid modal via @close handler', async () => {
+    aucationApi.getAucationById.mockResolvedValue({ data: { aucation: mockAucation, bids: [] } });
+    const { getByText, queryByLabelText } = renderWithProviders(DetailPage);
+    await waitFor(() => getByText('💰 Berikan Penawaran'));
+    await fireEvent.click(getByText('💰 Berikan Penawaran'));
+    await waitFor(() => getByText('Berikan Penawaran'));
+    // Click Batal inside BidModal to trigger @close="isBidModalOpen = false"
+    await fireEvent.click(getByText('Batal'));
+    await nextTick();
+  });
+
+  it('closes change modal via @close handler', async () => {
+    aucationApi.getAucationById.mockResolvedValue({ data: { aucation: mockAucation, bids: [] } });
+    const { getByText } = renderWithProviders(DetailPage);
+    const store = useUsersStore();
+    store.currentUser = { id: 99, name: 'Penjual' };
+    await waitFor(() => getByText('✏️ Edit'));
+    await fireEvent.click(getByText('✏️ Edit'));
+    await waitFor(() => getByText('Edit Lelang'));
+    await fireEvent.click(getByText('Batal'));
+    await nextTick();
+  });
+
+  it('closes cover modal via @close handler', async () => {
+    aucationApi.getAucationById.mockResolvedValue({ data: { aucation: mockAucation, bids: [] } });
+    const { getByText } = renderWithProviders(DetailPage);
+    const store = useUsersStore();
+    store.currentUser = { id: 99, name: 'Penjual' };
+    await waitFor(() => getByText('🖼️ Cover'));
+    await fireEvent.click(getByText('🖼️ Cover'));
+    await waitFor(() => getByText('Ubah Cover Lelang'));
+    await fireEvent.click(getByText('Batal'));
+    await nextTick();
+  });
 });

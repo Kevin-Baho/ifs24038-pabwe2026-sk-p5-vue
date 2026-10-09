@@ -44,6 +44,12 @@ describe('AddModal', () => {
     expect(emitted().close).toBeTruthy();
   });
 
+  it('emits close when X close button clicked', async () => {
+    const { getByLabelText, emitted } = renderWithProviders(AddModal, { props: { isOpen: true } });
+    await fireEvent.click(getByLabelText('Tutup modal tambah lelang'));
+    expect(emitted().close).toBeTruthy();
+  });
+
   it('shows error dialog when fields are empty on submit', async () => {
     const { getByRole } = renderWithProviders(AddModal, { props: { isOpen: true } });
     await fireEvent.submit(getByRole('button', { name: /Simpan Lelang/i }));

@@ -49,6 +49,14 @@ describe('ChangeCoverModal', () => {
     expect(emitted().close).toBeTruthy();
   });
 
+  it('emits close when X close button clicked', async () => {
+    const { getByLabelText, emitted } = renderWithProviders(ChangeCoverModal, {
+      props: { isOpen: true, aucationId: 1 },
+    });
+    await fireEvent.click(getByLabelText('Tutup modal ubah cover'));
+    expect(emitted().close).toBeTruthy();
+  });
+
   it('handles file change and shows preview', async () => {
     const { container } = renderWithProviders(ChangeCoverModal, {
       props: { isOpen: true, aucationId: 1 },

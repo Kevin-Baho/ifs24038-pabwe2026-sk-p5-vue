@@ -47,6 +47,14 @@ describe('BidModal', () => {
     expect(emitted().close).toBeTruthy();
   });
 
+  it('emits close when X close button clicked', async () => {
+    const { getByLabelText, emitted } = renderWithProviders(BidModal, {
+      props: { isOpen: true, aucationId: 1 },
+    });
+    await fireEvent.click(getByLabelText('Tutup modal penawaran'));
+    expect(emitted().close).toBeTruthy();
+  });
+
   it('submits bid as Number and emits refresh and close', async () => {
     aucationApi.addBid.mockResolvedValue({});
     const { getByPlaceholderText, getByRole, emitted } = renderWithProviders(BidModal, {

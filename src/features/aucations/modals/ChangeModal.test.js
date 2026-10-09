@@ -63,6 +63,28 @@ describe('ChangeModal', () => {
     expect(emitted().close).toBeTruthy();
   });
 
+  it('emits close when X close button clicked', async () => {
+    const { getByLabelText, emitted } = renderWithProviders(ChangeModal, {
+      props: { isOpen: true, aucation: mockAucation },
+    });
+    await fireEvent.click(getByLabelText('Tutup modal edit lelang'));
+    expect(emitted().close).toBeTruthy();
+  });
+
+  it('triggers v-model update handlers on all form inputs', async () => {
+    const { getByLabelText } = renderWithProviders(ChangeModal, {
+      props: { isOpen: true, aucation: mockAucation },
+    });
+    await fireEvent.update(getByLabelText('Judul Lelang'), 'New Title');
+    await fireEvent.update(getByLabelText('Harga Awal (Rp)'), '999');
+    await fireEvent.update(getByLabelText('Batas Waktu Lelang'), '2027-01-01T12:00');
+    await fireEvent.update(getByLabelText('Deskripsi Barang'), 'New Desc');
+    expect(getByLabelText('Judul Lelang').value).toBe('New Title');
+    expect(getByLabelText('Harga Awal (Rp)').value).toBe('999');
+    expect(getByLabelText('Batas Waktu Lelang').value).toBe('2027-01-01T12:00');
+    expect(getByLabelText('Deskripsi Barang').value).toBe('New Desc');
+  });
+
   it('submits update with correct payload', async () => {
     aucationApi.updateAucation.mockResolvedValue({});
     const { getByRole, emitted } = renderWithProviders(ChangeModal, {

@@ -179,4 +179,21 @@ describe('HomePage', () => {
     expect(getByText('Barang Gratis')).toBeInTheDocument();
     expect(getByText('Rp 0')).toBeInTheDocument();
   });
+
+  it('triggers setTab for Semua when clicked', async () => {
+    const { getByText } = renderWithProviders(HomePage);
+    await fireEvent.click(getByText('Semua'));
+    expect(getByText('Semua')).toBeInTheDocument();
+  });
+
+  it('closes AddModal when close event fires', async () => {
+    const { getByText, queryByText } = renderWithProviders(HomePage);
+    await fireEvent.click(getByText('Buat Lelang'));
+    await nextTick();
+    expect(getByText('Tambah Lelang Baru')).toBeInTheDocument();
+    // Click the Batal button inside AddModal to trigger @close="isAddModalOpen = false"
+    await fireEvent.click(getByText('Batal'));
+    await nextTick();
+    expect(queryByText('Tambah Lelang Baru')).not.toBeInTheDocument();
+  });
 });

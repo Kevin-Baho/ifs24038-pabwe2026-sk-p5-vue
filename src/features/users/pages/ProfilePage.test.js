@@ -100,4 +100,13 @@ describe('ProfilePage', () => {
     const input = getByLabelText('Nama Lengkap');
     expect(input).toBeInTheDocument();
   });
+
+  it('triggers v-model update handler on name input', async () => {
+    const { getByLabelText } = renderWithProviders(ProfilePage);
+    const store = useUsersStore();
+    store.currentUser = { name: 'Before', email: 'a@b.c' };
+    store.fetchMe = vi.fn().mockResolvedValue(undefined);
+    await fireEvent.update(getByLabelText('Nama Lengkap'), 'After');
+    expect(getByLabelText('Nama Lengkap').value).toBe('After');
+  });
 });
